@@ -1,1 +1,3 @@
-# CS5330-finalproject
+# CS5330 - Final Project
+
+Repo for final project
