@@ -13,6 +13,7 @@
 from tkinter import N
 import numpy as np
 import cv2
+import random
 
 # training constants
 
@@ -252,20 +253,46 @@ def match(qCard, train_ranks, train_suits):
     # return identity of card
     return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
 
+    
+
+#changes string number text to intergers to do adding calculations
+def name_to_number(card_name):
+    switcher = {
+        "Unknown":0,
+        "Ace":1,
+        "Two":2,
+        "Three":3,
+        "Four":4,
+        "Five":5,
+        "Six":6,
+        "Seven":7,
+        "Eight":8,
+        "Nine":9,
+        "Ten":10,
+        "Jack":10,
+        "Queen":10,
+        "King":10,}
+    return switcher.get(card_name,"nothing")
+
 # using results of card identification for Blackjack
 def store_result(n, cards):
+    score = 0;
     no_of_cards = n
     cards_obj = cards
-    print("No. of cards: ")
-    print(no_of_cards)
-    print("Value of cards: ")
-    print("\n")
+##    print("No. of cards: ")
+##    print(no_of_cards)
+##    print("Value of cards: ")
+##    print("\n")
     for i in range(0, no_of_cards):
-        print(cards_obj[i].best_rank_match)
-        print("\n")
+        score += name_to_number(cards_obj[i].best_rank_match)
+##    print(score)
+##    print("\n")
+
+    return score
     # TODO: cards_obj[0...no_of_cards-1].best_rank_match gives the card value
 
-# draw card identity on the card
+
+# draw card identity on the card and write game values
 def draw(image, qCard):
     x = qCard.center[0]
     y = qCard.center[1]
@@ -273,14 +300,37 @@ def draw(image, qCard):
 
     rank_name = qCard.best_rank_match
     suit_name = qCard.best_suit_match
-
+    
     # Draw card name twice, so letters have black outline
     cv2.putText(image,(rank_name+' of'),(x-60,y-10),font,1,(0,0,0),3,cv2.LINE_AA)
     cv2.putText(image,(rank_name+' of'),(x-60,y-10),font,1,(50,200,200),2,cv2.LINE_AA)
 
     cv2.putText(image,suit_name,(x-60,y+25),font,1,(0,0,0),3,cv2.LINE_AA)
     cv2.putText(image,suit_name,(x-60,y+25),font,1,(50,200,200),2,cv2.LINE_AA)
+    
     return image
+#Draws all the values and game logic onto the screen
+def game_text(image,score,d_score):
+    cv2.putText(image,("Your Value: "+ str(score)),(50,75),font,2,(0,0,0),3,cv2.LINE_AA)
+    cv2.putText(image,("Your Value: "+ str(score)),(50,75),font,2,(50,200,200),2,cv2.LINE_AA)
+
+    cv2.putText(image,("Dealers Value: "+ str(d_score)),(650,75),font,2,(0,0,0),3,cv2.LINE_AA)
+    cv2.putText(image,("Dealers Value: "+ str(d_score)),(650,75),font,2,(50,200,200),2,cv2.LINE_AA)
+    
+    if (score == 0):
+        cv2.putText(image,("Place cards to Play"),(450,700),font,1,(0,0,0),3,cv2.LINE_AA)
+        cv2.putText(image,("Place cards to Play"),(450,700),font,1,(50,200,200),2,cv2.LINE_AA)
+    if (score > d_score and score <= 21 or d_score > 21):
+        cv2.putText(image,("YOU WIN!"),(450,700),font,2,(0,0,0),3,cv2.LINE_AA)
+        cv2.putText(image,("YOU WIN!"),(450,700),font,2,(50,200,200),2,cv2.LINE_AA)
+    if (score < d_score and d_score <= 21 or score > 21):
+        cv2.putText(image,("YOU LOSE!"),(450,700),font,2,(0,0,0),3,cv2.LINE_AA)
+        cv2.putText(image,("YOU LOSE!"),(450,700),font,2,(50,200,200),2,cv2.LINE_AA)
+    if (score == 21 and d_score == 21):
+        cv2.putText(image,("Tie"),(450,700),font,2,(0,0,0),3,cv2.LINE_AA)
+        cv2.putText(image,("Tie"),(450,700),font,2,(50,200,200),2,cv2.LINE_AA)
+        
+    return image           
 
 def flattener(image, pts, w, h):
     temp_rect = np.zeros((4,2), dtype = "float32")

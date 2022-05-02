@@ -15,6 +15,7 @@ import time
 import os
 import funcs
 import video
+import random
 
 # frame constants
 IM_WIDTH = 1280
@@ -36,6 +37,9 @@ flag = 0
 #variables to return to function - usage in Blackjack module
 no_of_cards = 0
 cards = []
+score = 0
+d_score = 0
+
 
 # frame capture loop
 while flag == 0:
@@ -48,7 +52,7 @@ while flag == 0:
 	
     # finding card contours
     sorted_contours, is_card_contour = funcs.find_cards(preprocessed)
-
+    
     # if number of cards is not 0
     if len(sorted_contours) != 0:
 
@@ -68,7 +72,13 @@ while flag == 0:
 
                 # drawing rank and suit result on cards
                 frame = funcs.draw(frame, cards[k])
-                k = k + 1
+
+                #drawing game logic and values
+                frame = funcs.game_text(frame,score,d_score)
+                cards = cards
+                
+                k = k+1
+
 	    
         # drawing bounding boxes
         if (len(cards) != 0):
@@ -78,8 +88,11 @@ while flag == 0:
                 temp_cnts.append(cards[i].contour)
             cv2.drawContours(frame,temp_cnts, -1, (255,0,0), 2)
         no_of_cards = k
-        cards = cards   
-
+        cards = cards
+        
+        #function that adds up cards on the screen
+        score = funcs.store_result(no_of_cards, cards)
+    
     # display identified cards
     cv2.imshow("Card Detector",frame)
 
@@ -87,6 +100,21 @@ while flag == 0:
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q"):
         flag = 1
+
+   #Key to press to "Hit" the dealer if less than 17     
+    if key == ord("d"):
+        if (d_score <= 17):
+            d_score = d_score + random.randint(1,10)
+        if (d_score == 1):
+            d_score = d_score + random.randint(1,10)
+            
+   #Key to press to clear and reassign new dealer value         
+    if key == ord("c"):
+        d_score = 0
+        score = 0
+        time.sleep(3)
+        d_score = random.randint(1,10)+ random.randint(1,10)
+            
 
 # once main loop is exited, store card results (rank only)        
 if(flag == 1):
